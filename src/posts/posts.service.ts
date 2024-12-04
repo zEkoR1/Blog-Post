@@ -83,7 +83,7 @@ export class PostsService {
   async editPost(userId: string, body: EditPostDTO) {
     const post = await this.findOne(body.title);
 
-    this.userService.isAuthor(userId, post.authorId);
+    // this.userService.isAuthor(userId, post.authorId);
 
     // if (!isAuthor)
     //   throw new BadRequestException('You are not authorized to edit this post');
@@ -117,7 +117,7 @@ export class PostsService {
   async delete(userId: string, title: string) {
     const post = await this.findOne(title);
 
-    this.userService.isAuthor(userId, post.authorId);
+    // this.userService.isAuthor(userId, post.authorId);
 
     const deletedPost = await this.prisma.post.delete({
       where: { id: post.id },
@@ -151,7 +151,7 @@ export class PostsService {
 
     if (!posts.length)
       throw new BadRequestException('There is no any post with this Tag');
-    console.log(posts);
+    // console.log(posts);
     return posts;
   }
 }

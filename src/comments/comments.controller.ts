@@ -2,6 +2,7 @@ import { Controller, Post, UseGuards, Body, Request,Put , Delete, Patch} from '@
 import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from 'src/auth/Guards/jwt-auth.guard';
 import { CommentDTO } from 'src/DTO/request.dto/CommentDTO';
+import { IsAuthorGuard } from 'src/auth/Guards/is-author.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -12,13 +13,13 @@ export class CommentsController {
         const userID = req.user.id
         this.commentService.leaveComment(userID, body)
     }
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, IsAuthorGuard)
     @Patch('/edit')
     editComment(@Request() req, @Body() body: {title:string, comment: string, changes: string }){
         const userID = req.user.id
         return this.commentService.EditComment(userID, body)
     }
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, IsAuthorGuard)
     @Delete('/delete')
     deleteComment(@Request() req, @Body() body: {title:string, comment: string}){
         const userID = req.user.id

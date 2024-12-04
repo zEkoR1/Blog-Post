@@ -46,8 +46,6 @@ export class UsersService {
 
   }
 
-  async isAuthor(userID: string, authorID: string) {
-    if (userID === authorID) return userID
-    else throw new BadRequestException("You are not post author")
-  }
+
+
 }

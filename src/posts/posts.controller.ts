@@ -14,6 +14,7 @@ import { JwtAuthGuard } from 'src/auth/Guards/jwt-auth.guard';
 import { CreatePostDTO } from 'src/DTO/request.dto/CreatePostDTO';
 import { EditPostDTO } from 'src/DTO/request.dto/EditPostDTO';
 import { UsersService } from 'src/users/users.service';
+import { IsAuthorGuard } from 'src/auth/Guards/is-author.guard';
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -31,7 +32,7 @@ export class PostsController {
     return this.postService.findAll(username, tags);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsAuthorGuard)
   @Get('/my')
   getMyPosts(@Request() req) {
     const userId = req.user.id;
@@ -49,7 +50,7 @@ export class PostsController {
     // console.log(userId);
     return this.postService.create(userId, body);
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsAuthorGuard)
   @Patch('/edit')
   async editPost(@Request() req, @Body() body: EditPostDTO) {
     // console.log(postId)
@@ -59,7 +60,7 @@ export class PostsController {
     return this.postService.editPost(userId, body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, IsAuthorGuard)
   @Delete('/delete')
   deletePost(@Request() req, @Body() body: { title: string }) {
     const userId = req.user.id;
