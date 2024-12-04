@@ -3,6 +3,7 @@ import { CreatePostDTO } from 'src/DTO/request.dto/CreatePostDTO';
 import { EditPostDTO } from 'src/DTO/request.dto/EditPostDTO';
 import { isAuthorDTO } from 'src/DTO/request.dto/IsAuthorDTO';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TagsService } from 'src/tags/tags.service';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class PostsService {
   constructor(
     private prisma: PrismaService,
     private userService: UsersService,
+    private tagService : TagsService
   ) {}
   async findOne(title: string) {
     const post = this.prisma.post.findFirst({
@@ -52,6 +54,7 @@ export class PostsService {
     if (!body.title || !body.content) {
       throw new BadRequestException('Title and content are required');
     }
+    const createdTags = await this.tagService.create({tags})
     //  console.log(title, content)
     return this.prisma.post.create({
       data: {
@@ -60,11 +63,14 @@ export class PostsService {
         author: {
           connect: { id: userId },
         },
-        tags: {
-          connectOrCreate: tags.map((tag) => ({
-            where: { name: tag },
-            create: { name: tag },
-          })),
+        // tags: {
+        //   connectOrCreate: tags.map((tag) => ({
+        //     where: { name: tag },
+        //     create: { name: tag },
+        //   })),
+        // },
+        tags: { 
+          connect: createdTags.map( (tag) => ({id: tag.id}))
         },
       },
       include: {
@@ -82,33 +88,25 @@ export class PostsService {
   }
   async editPost(userId: string, body: EditPostDTO) {
     const post = await this.findOne(body.title);
-
-    // this.userService.isAuthor(userId, post.authorId);
-
-    // if (!isAuthor)
-    //   throw new BadRequestException('You are not authorized to edit this post');
+    const { tags } = body;
 
     const newData: {
       title?: string;
       content?: string;
       tags?: {
-        connectOrCreate: {
-          where: { name: string };
-          create: { name: string };
-        }[];
+        connect: { id: string }[];
       };
     } = {};
 
     if (body.title) newData.title = body.title;
     if (body.content) newData.content = body.content;
     if (body.tags) {
+      const createdTags = await this.tagService.create({ tags });
       newData.tags = {
-        connectOrCreate: body.tags.map((tag) => ({
-          where: { name: tag },
-          create: { name: tag },
-        })),
+        connect: createdTags.map((tag) => ({ id: tag.id })),
       };
-    } // console.log(newData);
+    }
+
     return this.prisma.post.update({
       where: { id: post.id },
       data: newData,

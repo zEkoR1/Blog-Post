@@ -5,32 +5,26 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TagsService {
   constructor(private prismaService: PrismaService) {}
 
-  async Tag(body: {tags: string[], post: { id: string } }) {
-    const {tags, post} = body;
-    // console.log(tags)
-    // const post = await this.prismaService.post.findFirst({
-    //   where: {
-    //     title: title,
-    //   },
-    // });
-    // if (!post) throw new BadRequestException('There is no post');
-
-    // if (userID !== post.authorId)
-    //   throw new BadRequestException('This user is not the post author');
-
-    return this.prismaService.post.update({
-      where: { id: post.id },
-      data: {
-        tags: {
-          connectOrCreate: tags.map((tag) => ({
-            where: { name: tag },
-            create: { name: tag },
-          })),
-        },
-      },
-      include: {
-        tags: true,
-      },
-    });
+  async find(body: {tags: string[]}) {
+    const tags = await this.prismaService.tag.findMany({
+      where: {name : 
+        {in : body.tags}
+      }
+    })
+    console.log(tags)
+    return tags;
+    
   }
+
+  async create(body: {tags: string[] }) {
+    const tagPromises  =  body.tags.map((tag) => {
+      return this.prismaService.tag.upsert({
+        where: {name:tag},
+        update: {},
+        create: {name: tag},
+      })
+    });
+    const tags = await Promise.all(tagPromises)
+    return tags
+    }
 }
